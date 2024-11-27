@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 typedef struct block {
     size_t size;
     struct block* next;
-    int free;
+    bool free;
 } block_t;
 block_t* first_block = NULL;
 
@@ -16,15 +17,13 @@ void initialize_heap() {
     first_block->free = 1;
 }
 
-
-
-void* get_me_blocks(ssize_t how_much ) {
+void* get_me_blocks(int how_much ) {
     void* ptr = sbrk(0);
     sbrk(how_much);
     return ptr;
 }
 
-void* malloc(size_t size) {
+void* malloc(int size) {
     void* ptr = get_me_blocks(size);
     if (ptr == (void*)-1) {
         return NULL;
@@ -39,5 +38,13 @@ void* malloc(size_t size) {
         prev_block = current_block;
         current_block = current_block->next;
     }
-
+    return NULL;
 }
+
+void freeMemory(void* ptr) {
+    block_t* block = (block_t*)ptr - sizeof(block_t);
+    block->free = 1;
+    block_t* next = first_block;
+    first_block = block;
+}
+
